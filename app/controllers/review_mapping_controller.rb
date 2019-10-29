@@ -85,6 +85,7 @@ module Helper_methods
 
   ## Helper Method for generating a random participant which is to be used in peer_review_strategy method.
   def gen_random_participant_id(iterator, participants_hash, num_participants, participants)
+    team = AssignmentTeam.find(params[:contributor_id])
     if iterator.zero?
         rand_num = rand(0..num_participants - 1)
     else
