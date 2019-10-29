@@ -66,7 +66,7 @@ module Helper_methods
   def check_num_reviews_args(num_reviews_per_student, num_reviews_per_submission, teams)
     has_error_not_raised = true
     # check for exit paths first
-    if num_reviews_per_student == 0 and num_reviews_per_submission == 0
+    if num_reviews_per_student.zero? and num_reviews_per_submission.zero?
       flash[:error] = "Please choose either the number of reviews per student or the number of reviewers per team (student)."
       has_error_not_raised = false
     elsif num_reviews_per_student != 0 and num_reviews_per_submission != 0
@@ -80,6 +80,7 @@ module Helper_methods
                        '[or "participants" if it is an individual assignment].'
       has_error_not_raised = false
     end
+    return has_error_not_raised
   end
 
   ## Helper Method for generating a random participant which is to be used in peer_review_strategy method.
@@ -96,7 +97,8 @@ module Helper_methods
     # if participants_with_min_assigned_reviews is blank
     no_particpants = participants_with_min_assigned_reviews.empty?
     # or only one element in participants_with_min_assigned_reviews, prohibit one student to review his/her own artifact
-    participant_is_owner = (participants_with_min_assigned_reviews.size == 1 and TeamsUser.exists?(team_id: team.id, user_id: participants[participants_with_min_assigned_reviews[0]].user_id))
+    team_user_exists = TeamsUser.exists?(team_id: team.id, user_id: participants[participants_with_min_assigned_reviews[0]].user_id)
+    participant_is_owner = (participants_with_min_assigned_reviews.size == 1 and team_user_exists)
     rand_num = if no_particpants or participant_is_owner
                  # use original method to get random number
                  rand(0..num_participants - 1)
@@ -105,7 +107,7 @@ module Helper_methods
                  participants_with_min_assigned_reviews[rand(0..participants_with_min_assigned_reviews.size - 1)]
                end
     end
-    return rand_num
+    rand_num
   end
 
   def peer_review_strategy(assignment_id, review_strategy, participants_hash)
@@ -188,9 +190,15 @@ class ReviewMappingController < ApplicationController
   @@time_create_last_review_mapping_record = nil
 
   def choose_case(action_in_params)
-    if ['add_dynamic_reviewer', 'show_available_submissions', 'assign_reviewer_dynamically', 'assign_metareviewer_dynamically', 'start_self_review'].include? action_in_params
-      return true
-    else ['Instructor', 'Teaching Assistant', 'Administrator'].include? current_role_name
+    allowed_actions = ['add_dynamic_reviewer',
+                       'show_available_submissions',
+                       'assign_reviewer_dynamically',
+                       'assign_metareviewer_dynamically',
+                       'start_self_review']
+    if allowed_actions.include? action_in_params
+      true
+    else
+      ['Instructor', 'Teaching Assistant', 'Administrator'].include? current_role_name
     end
   end
 
@@ -198,7 +206,7 @@ class ReviewMappingController < ApplicationController
   # start_self_review is a method that is invoked by a student user so it should be allowed accordingly
   def action_allowed?
     # case params[:action]
-    return choose_case(params[:action])
+    choose_case(params[:action])
   end
 
   def select_reviewer
@@ -442,8 +450,8 @@ class ReviewMappingController < ApplicationController
         teams << team
       end
     end
-    num_reviews_per_student = params[:num_reviews_per_student].to_i         # Number of sumbissions that can be reviewed by a single student
-    num_reviews_per_submission = params[:num_reviews_per_submission].to_i   # Toal number of reviews that can be performed on a single submission (or equivalently, number of students that can review the same submiss)
+    num_reviews_per_student = params[:num_reviews_per_student].to_i         # Number of submissions that can be reviewed by a single student
+    num_reviews_per_submission = params[:num_reviews_per_submission].to_i   # Total number of reviews that can be performed on a single submission (or equivalently, number of students that can review the same submiss)
     num_calibrated_artifacts = params[:num_calibrated_artifacts].to_i
     num_uncalibrated_artifacts = params[:num_uncalibrated_artifacts].to_i
     if num_calibrated_artifacts.zero? and num_uncalibrated_artifacts.zero?
@@ -516,5 +524,4 @@ class ReviewMappingController < ApplicationController
       redirect_to controller: 'submitted_content', action: 'edit', id: params[:reviewer_id], msg: e.message
     end
   end
-
 end

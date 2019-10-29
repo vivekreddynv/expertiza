@@ -10,16 +10,17 @@ class ReviewResponseMapController < ApplicationController
   @@time_create_last_review_mapping_record = nil
 
   def choose_case(action_in_params)
-    if ['add_dynamic_reviewer','show_available_submissions','assign_reviewer_dynamically','assign_metareviewer_dynamically','start_self_review'].include? action_in_params
-      return true
-    else ['Instructor', 'Teaching Assistant', 'Administrator'].include? current_role_name
+    if ['add_calibration'].include? action_in_params
+      true
+    else
+      ['Instructor', 'Teaching Assistant', 'Administrator'].include? current_role_name
     end
   end
   # E1600
   # start_self_review is a method that is invoked by a student user so it should be allowed accordingly
   def action_allowed?
     # case params[:action]
-    return choose_case(params[:action])
+    choose_case(params[:action])
   end
 
   def add_calibration

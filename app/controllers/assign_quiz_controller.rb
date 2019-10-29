@@ -2,14 +2,14 @@ class AssignQuizController < ApplicationController
   
   def choose_case(action_in_params)
     if ['assign_quiz_dynamically'].include? action_in_params
-      return true
+      true
     else ['Instructor', 'Teaching Assistant', 'Administrator'].include? current_role_name
     end
   end
 
   def action_allowed?
     # case params[:action]
-    return choose_case(params[:action])
+    choose_case(params[:action])
   end
 
   # assigns the quiz dynamically to the participant
@@ -17,7 +17,8 @@ class AssignQuizController < ApplicationController
     begin
       assignment = Assignment.find(params[:assignment_id])
       reviewer = AssignmentParticipant.where(user_id: params[:reviewer_id], parent_id: assignment.id).first
-      if ResponseMap.where(reviewed_object_id: params[:questionnaire_id], reviewer_id: params[:participant_id]).first
+      quiz_already_taken = ResponseMap.where(reviewed_object_id: params[:questionnaire_id], reviewer_id: params[:participant_id]).first
+      if quiz_already_taken
         flash[:error] = "You have already taken that quiz."
       else
         @map = QuizResponseMap.new
