@@ -2,8 +2,7 @@ require 'rails_helper'
 describe ReviewResponseMapController do
   let(:assignment) { double('Assignment', id: 1) }
   let(:review_response_map) do
-    double('ReviewResponseMap', id: 1, map_id: 1, assignment: assignment,
-                                reviewer: double('Participant', id: 1, name: 'reviewer'), reviewee: double('Participant', id: 2, name: 'reviewee'))
+    double('ReviewResponseMap', id: 1, map_id: 1, assignment: assignment, reviewer: double('Participant', id: 1, name: 'reviewer'), reviewee: double('Participant', id: 2, name: 'reviewee'))
   end
   let(:metareview_response_map) do
     double('MetareviewResponseMap', id: 1, map_id: 1, assignment: assignment,
